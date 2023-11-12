@@ -1,0 +1,15 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# ============================ EXPERIMENTAL ============================
+# Magic .yaml files
+*task-info.yaml
+*task-remote-info.yaml
+/course-info.yaml
+/course-remote-info.yaml
+/Password Hacker (Python)/lesson-info.yaml
+# Even more magic binary files
+/.idea/frameworkLessonHistory/storage.storageData
+/.idea/frameworkLessonHistory/storage.storageRecordIndex
