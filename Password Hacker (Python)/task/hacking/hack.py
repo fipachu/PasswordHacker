@@ -1,22 +1,30 @@
 import dataclasses
+import itertools as it
 import socket
 import argparse
+import string
 
 
 @dataclasses.dataclass(slots=True)
 class Config:
     address: tuple[str, int]
-    message: bytes
 
     def __init__(self):
         parser = argparse.ArgumentParser()
         parser.add_argument('ip')
         parser.add_argument('port', type=int)
-        parser.add_argument('message')
         args = parser.parse_args()
 
         self.address = args.ip, args.port
-        self.message = args.message.encode()
+
+
+def get_passwords():
+    alphabet = string.ascii_lowercase + string.digits
+
+    for i in it.count(start=1):
+        passwords = it.product(alphabet, repeat=i)
+        passwords = (''.join(p) for p in passwords)
+        yield from passwords
 
 
 def main():
@@ -24,10 +32,18 @@ def main():
 
     with socket.socket() as client:
         client.connect(config.address)
-        client.send(config.message)
-        response = client.recv(1024).decode()
 
-        print(response)
+        for candidate in get_passwords():
+            client.send(candidate.encode())
+            response = client.recv(1024).decode()
+
+            match response:
+                case 'Connection success!':
+                    print(candidate)
+                    break
+                case 'Too many attempts.' as s:
+                    print(s)
+                    break
 
 
 if __name__ == "__main__":
