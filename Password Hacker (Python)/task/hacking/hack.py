@@ -37,7 +37,7 @@ def brute_force(client):
                 print(candidate)
                 break
             case 'Too many attempts.' as s:
-                print(s)
+                print(f'Error! Server response: {s}')
                 break
 
 
