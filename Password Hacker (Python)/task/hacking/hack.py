@@ -27,23 +27,27 @@ def get_passwords():
         yield from passwords
 
 
+def brute_force(client):
+    for candidate in get_passwords():
+        client.send(candidate.encode())
+        response = client.recv(1024).decode()
+
+        match response:
+            case 'Connection success!':
+                print(candidate)
+                break
+            case 'Too many attempts.' as s:
+                print(s)
+                break
+
+
 def main():
     config = Config()
 
     with socket.socket() as client:
         client.connect(config.address)
 
-        for candidate in get_passwords():
-            client.send(candidate.encode())
-            response = client.recv(1024).decode()
-
-            match response:
-                case 'Connection success!':
-                    print(candidate)
-                    break
-                case 'Too many attempts.' as s:
-                    print(s)
-                    break
+        brute_force(client)
 
 
 if __name__ == "__main__":
