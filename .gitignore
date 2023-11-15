@@ -3,6 +3,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Temporary file for experiments
+/Password Hacker (Python)/task/hacking/_tmp.py
+
 # ============================ EXPERIMENTAL ============================
 # Magic .yaml files
 *task-info.yaml
