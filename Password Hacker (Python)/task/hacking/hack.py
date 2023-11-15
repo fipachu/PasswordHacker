@@ -1,7 +1,7 @@
+from argparse import ArgumentParser
 from dataclasses import dataclass
 from itertools import product
 from socket import socket
-from argparse import ArgumentParser
 from sys import stderr
 
 FILE = (r'C:\Users\filip\OneDrive\PycharmProjects'

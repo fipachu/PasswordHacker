@@ -11,7 +11,7 @@ FIRST_FIVE = ['123456', 'password', 'passworD', 'passwoRd', 'passwoRD', ]
 class TestGetPassword(TestCase):
     def test_head(self):
         actual = get_passwords()
-        expected = chain(FIRST_FIVE)
+        expected = FIRST_FIVE
 
         for password in expected:
             self.assertEqual(next(actual), password)
