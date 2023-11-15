@@ -2,8 +2,11 @@ import dataclasses
 import itertools as it
 import socket
 import argparse
-import string
 from sys import stderr
+
+FILE = (r'C:\Users\filip\OneDrive\PycharmProjects'
+        r'\Password Hacker (Python)\Password Hacker (Python)'
+        r'\task\hacking\passwords.txt')
 
 
 @dataclasses.dataclass(slots=True)
@@ -20,9 +23,16 @@ class Config:
 
 
 def get_passwords():
-    with open('passwords.txt') as f:
+    with open(FILE) as f:
         for line in f:
-            yield line
+            password = line.strip()
+
+            all_cases = ((c.lower(), c.upper()) if c.isalpha() else (c,)
+                         for c in password)
+            all_cases = it.product(*all_cases)
+            all_cases = map(''.join, all_cases)
+
+            yield from all_cases
 
 
 def brute_force(client):
