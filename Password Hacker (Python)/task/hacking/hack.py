@@ -1,7 +1,7 @@
-import dataclasses
-import itertools as it
-import socket
-import argparse
+from dataclasses import dataclass
+from itertools import product
+from socket import socket
+from argparse import ArgumentParser
 from sys import stderr
 
 FILE = (r'C:\Users\filip\OneDrive\PycharmProjects'
@@ -9,12 +9,12 @@ FILE = (r'C:\Users\filip\OneDrive\PycharmProjects'
         r'\task\hacking\passwords.txt')
 
 
-@dataclasses.dataclass(slots=True)
+@dataclass(slots=True)
 class Config:
     address: tuple[str, int]
 
     def __init__(self):
-        parser = argparse.ArgumentParser()
+        parser = ArgumentParser()
         parser.add_argument('ip')
         parser.add_argument('port', type=int)
         args = parser.parse_args()
@@ -29,7 +29,7 @@ def get_passwords():
 
             all_cases = ((c.lower(), c.upper()) if c.isalpha() else (c,)
                          for c in password)
-            all_cases = it.product(*all_cases)
+            all_cases = product(*all_cases)
             all_cases = map(''.join, all_cases)
 
             yield from all_cases
@@ -52,7 +52,7 @@ def brute_force(client):
 def main():
     config = Config()
 
-    with socket.socket() as client:
+    with socket() as client:
         client.connect(config.address)
 
         brute_force(client)
