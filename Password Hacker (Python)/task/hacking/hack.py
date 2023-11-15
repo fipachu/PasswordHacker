@@ -20,12 +20,9 @@ class Config:
 
 
 def get_passwords():
-    alphabet = string.ascii_lowercase + string.digits
-
-    for i in it.count(start=1):
-        passwords = it.product(alphabet, repeat=i)
-        passwords = (''.join(p) for p in passwords)
-        yield from passwords
+    with open('passwords.txt') as f:
+        for line in f:
+            yield line
 
 
 def brute_force(client):
