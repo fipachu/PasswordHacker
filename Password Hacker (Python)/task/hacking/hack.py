@@ -3,6 +3,7 @@ import itertools as it
 import socket
 import argparse
 import string
+from sys import stderr
 
 
 @dataclasses.dataclass(slots=True)
@@ -37,7 +38,7 @@ def brute_force(client):
                 print(candidate)
                 break
             case 'Too many attempts.' as s:
-                print(f'Error! Server response: {s}')
+                print(f'Error! Server response: {s}', file=stderr)
                 break
 
 
