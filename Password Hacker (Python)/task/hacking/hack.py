@@ -72,7 +72,6 @@ def main():
     with socket() as client:
         client.connect(config.address)
 
-        brute_force(client)
         login = brute_force_login(client)
 
 
