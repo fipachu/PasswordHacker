@@ -1,4 +1,4 @@
-from json import dumps
+from json import dumps, loads
 from argparse import ArgumentParser
 from dataclasses import dataclass
 from itertools import product
@@ -53,18 +53,17 @@ def get_logins():
             yield from all_cases
 
 
-def brute_force(client):
-    for candidate in get_passwords():
-        client.send(candidate.encode())
-        response = client.recv(1024).decode()
+def brute_force_login(client):
+    for login in get_logins():
+        credentials = Credentials(login, ' ')
 
-        match response:
-            case 'Connection success!':
-                print(candidate)
-                break
-            case 'Too many attempts.' as s:
-                print(f'Error! Server response: {s}', file=stderr)
-                break
+        client.send(credentials.to_json().encode())
+        response = client.recv(1024).decode()
+        response = loads(response)
+
+        # TODO?: match responses as dicts to ignore formatting
+        if response == WRONG_PASSWORD:
+            return login
 
 
 def main():
@@ -74,6 +73,7 @@ def main():
         client.connect(config.address)
 
         brute_force(client)
+        login = brute_force_login(client)
 
 
 if __name__ == "__main__":
