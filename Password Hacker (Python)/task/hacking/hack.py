@@ -5,7 +5,7 @@ from socket import socket
 from sys import stderr
 
 FILE = (r'C:\Users\filip\OneDrive\PycharmProjects\Password Hacker (Python)'
-        r'\passwords.txt')
+        r'\logins.txt')
 
 
 @dataclass(slots=True)
@@ -22,6 +22,12 @@ class Config:
 
 
 def get_passwords():
+    pass
+
+
+# TODO: check if all case combinations are necessary
+#   if they are then why the first two lines of logins.exe??
+def get_logins():
     with open(FILE) as f:
         for line in f:
             password = line.strip()
