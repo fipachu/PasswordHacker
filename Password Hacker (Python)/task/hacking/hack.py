@@ -4,9 +4,8 @@ from itertools import product
 from socket import socket
 from sys import stderr
 
-FILE = (r'C:\Users\filip\OneDrive\PycharmProjects'
-        r'\Password Hacker (Python)\Password Hacker (Python)'
-        r'\task\hacking\passwords.txt')
+FILE = (r'C:\Users\filip\OneDrive\PycharmProjects\Password Hacker (Python)'
+        r'\passwords.txt')
 
 
 @dataclass(slots=True)
