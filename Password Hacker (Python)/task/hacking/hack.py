@@ -34,10 +34,6 @@ class Credentials(dict):
         return dumps(self, indent=indent)
 
 
-def get_passwords():
-    pass
-
-
 # TODO: check if all case combinations are necessary
 #   if they are then why the first two lines of logins.exe??
 def get_logins():
