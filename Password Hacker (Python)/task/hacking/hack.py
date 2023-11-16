@@ -1,3 +1,4 @@
+from json import dumps
 from argparse import ArgumentParser
 from dataclasses import dataclass
 from itertools import product
@@ -19,6 +20,14 @@ class Config:
         args = parser.parse_args()
 
         self.address = args.ip, args.port
+
+
+class Credentials(dict):
+    def __init__(self, login: str, password: str):
+        super().__init__({'login': login, 'password': password})
+
+    def to_json(self, indent=None):
+        return dumps(self, indent=indent)
 
 
 def get_passwords():
