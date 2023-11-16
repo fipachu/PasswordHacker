@@ -1,8 +1,7 @@
-from itertools import chain
 from unittest import TestCase
 
 # Comment out next line as a workaround to fix the submission test
-from hack import get_passwords, get_logins
+# from hack import get_passwords, get_logins
 
 
 class TestHack(TestCase):
