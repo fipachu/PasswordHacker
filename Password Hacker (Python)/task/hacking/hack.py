@@ -3,10 +3,14 @@ from argparse import ArgumentParser
 from dataclasses import dataclass
 from itertools import product
 from socket import socket
-from sys import stderr
 
 FILE = (r'C:\Users\filip\OneDrive\PycharmProjects\Password Hacker (Python)'
         r'\logins.txt')
+WRONG_LOGIN = {'result': 'Wrong login!'}
+WRONG_PASSWORD = {'result': 'Wrong password!'}
+BAD_REQUEST = {'result': 'Bad request!'}
+EXCEPTION = {'result': 'Exception happened during login'}
+SUCCESS = {'result': 'Connection success!'}
 
 
 @dataclass(slots=True)
