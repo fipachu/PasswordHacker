@@ -8,9 +8,7 @@ from hack import get_passwords, get_logins
 class TestHack(TestCase):
     def test_logins_head(self):
         expected = ['admin', 'admiN', 'admIn', 'admIN', 'adMin', 'adMiN', 'adMIn']
-        actual = get_logins()
-
-        for e, a in zip(expected, actual):
+        for e, a in zip(expected, get_logins()):
             self.assertEqual(e, a)
 
     def test_passwords_head(self):
