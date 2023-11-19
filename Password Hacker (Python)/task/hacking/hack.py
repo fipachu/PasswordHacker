@@ -78,7 +78,8 @@ def main():
         login = brute_force_login(client)
         password = brute_force_password(client, login)
 
-    print(dumps(dict(login=login, password=password)))
+    credentials = Credentials(login, password)
+    print(credentials.to_json())
 
 
 if __name__ == "__main__":
