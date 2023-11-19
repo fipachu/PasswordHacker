@@ -1,4 +1,5 @@
 from argparse import ArgumentParser
+from inspect import stack
 from json import dumps, loads
 from socket import socket
 from string import ascii_letters, digits
@@ -53,33 +54,37 @@ def get_passwords():
             raise LookupError(f'{ALPHABET=} exhausted without a match!')
 
 
-def brute_force_login(client):
-    for login in get_logins():
-        credentials = Credentials(login, ' ')
+def brute_force(client, login=None):
+    generator = get_logins() if login is None \
+        else get_passwords()
+
+    for candidate in generator:
+        if login is None:
+            credentials = (candidate, ' ')
+        else:
+            credentials = (login, candidate)
+
+        credentials = Credentials(*credentials)
 
         client.send(credentials.to_json().encode())
         response = client.recv(1024).decode()
         response = loads(response)
 
-        if response == WRONG_PASSWORD:
-            return login
-
-
-def brute_force_password(client, login):
-    passwords = get_passwords()
-    for password in passwords:
-        credentials = Credentials(login, password)
-
-        client.send(credentials.to_json().encode())
-        response = client.recv(1024).decode()
-        response = loads(response)
-
-        if response == EXCEPTION:
-            # Notify passwords that we got a match
-            passwords.send(password)
-            pass
+        if login is None and response == WRONG_PASSWORD:
+            # Found login
+            return candidate
+        elif response == EXCEPTION:
+            # Found partial password
+            generator.send(candidate)
+            continue
         elif response == SUCCESS:
-            return password
+            # Found password
+            return candidate
+        elif login and response == WRONG_LOGIN:
+            function = stack()[0][3]
+            raise ValueError(f'Bad login passed into {function}! {login=}')
+        elif response == BAD_REQUEST:
+            raise ValueError(f'Bad credentials! {credentials=}')
 
 
 def main():
@@ -88,8 +93,8 @@ def main():
     with socket() as client:
         client.connect(address)
 
-        login = brute_force_login(client)
-        password = brute_force_password(client, login)
+        login = brute_force(client)
+        password = brute_force(client, login)
 
     credentials = Credentials(login, password)
     print(credentials.to_json())
