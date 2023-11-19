@@ -17,7 +17,7 @@ SUCCESS = {'result': 'Connection success!'}
 
 class Credentials(dict):
     def __init__(self, login: str, password: str):
-        super().__init__({'login': login, 'password': password})
+        super().__init__(login=login, password=password)
 
     def to_json(self, indent=None):
         return dumps(self, indent=indent)
