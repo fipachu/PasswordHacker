@@ -49,11 +49,13 @@ def brute_force_login(client):
         if response == WRONG_PASSWORD:
             return login
 
+    else:
+        raise LookupError(f'{LOGINS=} exhausted without a match!')
+
 
 def brute_force_password(client, login):
     password = []
-    found = False
-    while not found:
+    while True:
         for character in ALPHABET:
             candidate = ''.join(password) + character
             credentials = Credentials(login, candidate)
@@ -67,6 +69,9 @@ def brute_force_password(client, login):
                 break
             elif response == SUCCESS:
                 return candidate
+
+        else:
+            raise LookupError(f'{ALPHABET=} exhausted without a match!')
 
 
 def main():
