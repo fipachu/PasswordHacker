@@ -1,5 +1,4 @@
 from argparse import ArgumentParser
-from dataclasses import dataclass
 from json import dumps, loads
 from socket import socket
 from string import ascii_letters, digits
@@ -16,20 +15,17 @@ EXCEPTION = {'result': 'Exception happened during login'}
 SUCCESS = {'result': 'Connection success!'}
 
 
-@dataclass(slots=True)
-class Config:
-    address: tuple[str, int]
-
-    def __init__(self):
+class Address(tuple[str, int]):
+    def __new__(cls):
         parser = ArgumentParser()
         parser.add_argument('ip')
         parser.add_argument('port', type=int)
         args = parser.parse_args()
 
-        self.address = args.ip, args.port
+        return super(Address, cls).__new__(cls, (args.ip, args.port))
 
 
-class Credentials(dict):
+class Credentials(dict[str: str, str: str]):
     def __init__(self, login: str, password: str):
         super().__init__({'login': login, 'password': password})
 
@@ -75,10 +71,10 @@ def brute_force_password(client, login):
 
 
 def main():
-    config = Config()
+    address = Address()
 
     with socket() as client:
-        client.connect(config.address)
+        client.connect(address)
 
         login = brute_force_login(client)
         password = brute_force_password(client, login)
