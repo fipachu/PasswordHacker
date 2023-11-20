@@ -3,6 +3,7 @@ from inspect import stack
 from json import dumps, loads
 from socket import socket
 from string import ascii_letters, digits
+from time import perf_counter
 
 LOGINS = r"C:\Users\filip\OneDrive\PycharmProjects\Password Hacker (Python)\logins.txt"
 
@@ -85,6 +86,29 @@ def brute_force(client, login=None):
             raise ValueError(f"Bad credentials! {credentials=}")
 
 
+def print_times(client, login):
+    """For now, it only prints times for one character passwords"""
+    times = []
+    passwords = get_passwords()
+    for i, candidate in zip(range(len(ALPHABET)), passwords):
+        credentials = Credentials(login, candidate)
+
+        start = perf_counter()
+        client.send(credentials.to_json().encode())
+        response = client.recv(1024).decode()
+        end = perf_counter()
+        time = end - start
+
+        times.append(time)
+
+        response = loads(response)
+
+        print(f"{i=:<2}  {time=:<22}  {candidate=}  {response=}")
+
+    average = sum(times) / len(times)
+    print(f"   AVERAGE={average}")
+
+
 def main():
     address = get_address()
 
@@ -92,10 +116,12 @@ def main():
         client.connect(address)
 
         login = brute_force(client)
-        password = brute_force(client, login)
+        print_times(client, login)
 
-    credentials = Credentials(login, password)
-    print(credentials.to_json())
+        # password = brute_force(client, login)
+
+    # credentials = Credentials(login, password)
+    # print(credentials.to_json())
 
 
 if __name__ == "__main__":
