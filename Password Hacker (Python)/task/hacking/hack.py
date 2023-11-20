@@ -4,16 +4,15 @@ from json import dumps, loads
 from socket import socket
 from string import ascii_letters, digits
 
-LOGINS = (r'C:\Users\filip\OneDrive\PycharmProjects\Password Hacker (Python)'
-          r'\logins.txt')
+LOGINS = r"C:\Users\filip\OneDrive\PycharmProjects\Password Hacker (Python)\logins.txt"
 
 ALPHABET = ascii_letters + digits
 
-WRONG_LOGIN = {'result': 'Wrong login!'}
-WRONG_PASSWORD = {'result': 'Wrong password!'}
-BAD_REQUEST = {'result': 'Bad request!'}
-EXCEPTION = {'result': 'Exception happened during login'}
-SUCCESS = {'result': 'Connection success!'}
+WRONG_LOGIN = {"result": "Wrong login!"}
+WRONG_PASSWORD = {"result": "Wrong password!"}
+BAD_REQUEST = {"result": "Bad request!"}
+EXCEPTION = {"result": "Exception happened during login"}
+SUCCESS = {"result": "Connection success!"}
 
 
 class Credentials(dict):
@@ -26,8 +25,8 @@ class Credentials(dict):
 
 def get_address() -> tuple[str, int]:
     parser = ArgumentParser()
-    parser.add_argument('host')
-    parser.add_argument('port', type=int)
+    parser.add_argument("host")
+    parser.add_argument("port", type=int)
     args = parser.parse_args()
 
     return args.host, args.port
@@ -37,11 +36,11 @@ def get_logins():
     with open(LOGINS) as f:
         logins = (line.strip() for line in f)
         yield from logins
-        raise LookupError(f'{LOGINS=} exhausted without a match!')
+        raise LookupError(f"{LOGINS=} exhausted without a match!")
 
 
 def get_passwords():
-    password = ''
+    password = ""
     while True:
         for character in ALPHABET:
             match = yield password + character
@@ -51,16 +50,15 @@ def get_passwords():
                 break
 
         else:
-            raise LookupError(f'{ALPHABET=} exhausted without a match!')
+            raise LookupError(f"{ALPHABET=} exhausted without a match!")
 
 
 def brute_force(client, login=None):
-    generator = get_logins() if login is None \
-        else get_passwords()
+    generator = get_logins() if login is None else get_passwords()
 
     for candidate in generator:
         if login is None:
-            credentials = (candidate, ' ')
+            credentials = (candidate, " ")
         else:
             credentials = (login, candidate)
 
@@ -82,9 +80,9 @@ def brute_force(client, login=None):
             return candidate
         elif login and response == WRONG_LOGIN:
             function = stack()[0][3]
-            raise ValueError(f'Bad login passed into {function}! {login=}')
+            raise ValueError(f"Bad login passed into {function}! {login=}")
         elif response == BAD_REQUEST:
-            raise ValueError(f'Bad credentials! {credentials=}')
+            raise ValueError(f"Bad credentials! {credentials=}")
 
 
 def main():
