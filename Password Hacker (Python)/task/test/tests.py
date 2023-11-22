@@ -39,7 +39,7 @@ def random_login():
 class Hacking(StageTest):
 
     def __init__(self, module):
-        super().__init__(source=module)
+        super().__init__(source='hacking/hack.py')
         self.ready = False
         self.sock = None
         self.serv = None
@@ -189,6 +189,6 @@ class Hacking(StageTest):
 
 
 if __name__ == '__main__':
-    test = Hacking('hacking.hack')
+    test = Hacking("hacking.hack")
     test.run_tests()
     test.stop_server()
