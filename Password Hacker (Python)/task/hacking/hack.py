@@ -67,8 +67,11 @@ def brute_force(client, login=None, threshold=0.01):
 
         start = perf_counter()
         client.send(credentials.to_json().encode())
-        response = client.recv(1024).decode()
+        response = client.recv(1024)
         time = perf_counter() - start
+
+        response = response.decode()
+        response = loads(response)
 
         if login is None and response == WRONG_PASSWORD:
             # Found login
