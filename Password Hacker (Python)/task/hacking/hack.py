@@ -8,6 +8,7 @@ from time import perf_counter
 LOGINS = r"C:\Users\filip\OneDrive\PycharmProjects\Password Hacker (Python)\logins.txt"
 
 ALPHABET = ascii_letters + digits
+EXAMPLE_BAD_PASSWORD = " "
 
 WRONG_LOGIN = {"result": "Wrong login!"}
 WRONG_PASSWORD = {"result": "Wrong password!"}
@@ -59,7 +60,7 @@ def brute_force(client, login=None, threshold=0.01):
 
     for candidate in generator:
         if login is None:
-            credentials = (candidate, " ")
+            credentials = (candidate, EXAMPLE_BAD_PASSWORD)
         else:
             credentials = (login, candidate)
 
@@ -73,21 +74,22 @@ def brute_force(client, login=None, threshold=0.01):
         response = response.decode()
         response = loads(response)
 
+        if login and response == WRONG_LOGIN:
+            function = stack()[0][3]
+            raise ValueError(f"Bad login passed into {function}! {login=}")
+        if response == BAD_REQUEST:
+            raise ValueError(f"Bad credentials! {credentials=}")
+
         if login is None and response == WRONG_PASSWORD:
             # Found login
             return candidate
-        elif time > threshold:
-            # Found partial password
-            generator.send(candidate)
-            continue
-        elif response == SUCCESS:
+        if response == SUCCESS:
             # Found password
             return candidate
-        elif login and response == WRONG_LOGIN:
-            function = stack()[0][3]
-            raise ValueError(f"Bad login passed into {function}! {login=}")
-        elif response == BAD_REQUEST:
-            raise ValueError(f"Bad credentials! {credentials=}")
+
+        if time > threshold:
+            # Found partial password
+            generator.send(candidate)
 
 
 def print_times(client, login):
