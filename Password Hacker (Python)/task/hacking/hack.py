@@ -55,6 +55,8 @@ def get_passwords():
             raise LookupError(f"{ALPHABET=} exhausted without a match!")
 
 
+# Thats where DRY gets you, I preffered this as two separate functions
+# but now that it is already merged I'm too lazy to untangle it.
 def brute_force(client, login=None, threshold=0.01):
     generator = get_logins() if login is None else get_passwords()
 
