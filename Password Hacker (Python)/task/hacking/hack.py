@@ -92,24 +92,19 @@ def brute_force(client, login=None, threshold=0.01):
 
 def print_times(client, login):
     times = []
-    passwords = get_passwords()
-    for i, candidate in zip(range(len(ALPHABET)), passwords):
+    for i, candidate in zip(range(len(ALPHABET)), get_passwords()):
         credentials = Credentials(login, candidate)
 
         start = perf_counter()
         client.send(credentials.to_json().encode())
-        response = client.recv(1024).decode()
-        end = perf_counter()
-        time = end - start
+        client.recv(1024)
+        time = perf_counter() - start
 
         times.append(time)
 
-        response = loads(response)
+        print(f"{i=:<2}  {time=:.3f}  {candidate=}")
 
-        print(f"{i=:<2}  {time=:<22}  {candidate=}  {response=}")
-
-    average = sum(times) / len(times)
-    print(f"   AVERAGE={average}")
+    print(f"   AVERAGE={sum(times) / len(times)}")
 
 
 def main():
